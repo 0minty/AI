@@ -1,3 +1,3 @@
-token_tg = '6791788627:AAFW0Y7b_Vm5w4E0Hm51mR7lFCB7O_SBgms'
-token_ai = 'O90pu34NNiXKALqNkq9tFiRu02s3JVBA'
-ID_ADM = [5895185451, 932038847]
+token_tg = ''
+token_ai = ''
+ID_ADM = []
