@@ -142,6 +142,7 @@ async def generate_grammar(callback: types.CallbackQuery, state: FSMContext):
         ai_response = await generate_ai(response_text=response_text)
         await state.update_data(user_check_response=ai_response)
         processed_response = '\n'.join([
+            f"<code>{line.lstrip('```').strip()}</code>" if line.strip().startswith('```') else
             f"<b>{line.replace('*', '').strip()}</b>" if '**' in line or '*' in line else
             f"<i>{line.lstrip('#').strip()}</i>" if line.strip().startswith('###') else
             line
@@ -167,7 +168,8 @@ async def check_user_task(callback: types.CallbackQuery, state: FSMContext):
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=kb)
     old_mes = data.get('mes')
     old_mes = await bot.edit_message_text(chat_id=callback.message.chat.id, message_id=old_mes.message_id,
-                                          text='📝Отправьте выполненное задание на проверку (только текст):', reply_markup=keyboard)
+                                          text='📝Отправьте выполненное задание на проверку (только текст):',
+                                          reply_markup=keyboard)
     await state.update_data(old_mes=old_mes)
     await state.set_state(FMSuser.user_check_response_generate)
 
@@ -189,6 +191,7 @@ async def check_user_task_ai(message: types.Message, state: FSMContext):
     mes = await generate_ai(
         f'Проверь мое задание. Поясни ответ на русском языке и дай правильный ответ или исправь ошибки с пояснением. Вот задание: {user_ai_check}\n Мой ответ на задание: {task_message}')
     processed_response = '\n'.join([
+        f"<code>{line.lstrip('```').strip()}</code>" if line.strip().startswith('```') else
         f"<b>{line.replace('*', '').strip()}</b>" if '**' in line or '*' in line else
         f"<i>{line.lstrip('#').strip()}</i>" if line.strip().startswith('###') else
         line
@@ -232,6 +235,7 @@ async def stop_mes(message: types.Message, state: FSMContext):
     old_mes = await bot.send_message(chat_id=message.chat.id, text='❗️Подождите, ваш запрос обрабатывается...')
     await state.update_data(mes=old_mes)
 
+
 @dp.message(Command('us'))
 async def adm_user(message: types.Message):
     user_id = message.from_user.id
@@ -242,6 +246,8 @@ async def adm_user(message: types.Message):
             result = await cursor.fetchone()
             count = result[0]
             await bot.send_message(message.chat.id, f'Кол-во пользователей: {count}')
+
+
 @dp.message()
 async def generate_response(message: types.Message, state: FSMContext):
     async with aiosqlite.connect('base.db') as conn:
@@ -264,6 +270,7 @@ async def generate_response(message: types.Message, state: FSMContext):
         response_text = f"Привет! представь что ты мой репетитор {lang_user} языку, сам я знаю только Русский язык и пиши название задания только на Русском языке. Помоги мне справиться с проблемой {response}"
         ai_response = await generate_ai(response_text=response_text)
         processed_response = '\n'.join([
+            f"<code>{line.lstrip('```').strip()}</code>" if line.strip().startswith('```') else
             f"<b>{line.replace('*', '').strip()}</b>" if '**' in line or '*' in line else
             f"<i>{line.lstrip('#').strip()}</i>" if line.strip().startswith('###') else
             line
@@ -320,6 +327,8 @@ async def generate_ai(response_text):
                 raise e
 
     raise Exception("Превышено число повторных попыток из-за ошибки 429 (превышен лимит запросов).")
+
+
 async def main():
     while True:
         try:
